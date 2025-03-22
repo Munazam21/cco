@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { createBrowserSupabaseClient } from '../lib/supabase'
+import { createClient } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 
 const LoginForm = () => {
@@ -17,7 +17,12 @@ const LoginForm = () => {
     setError(null)
     
     try {
-      const supabase = createBrowserSupabaseClient()
+      // Create a Supabase client directly
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      )
+      
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password
