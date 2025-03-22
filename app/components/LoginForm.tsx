@@ -9,21 +9,35 @@ const LoginForm = () => {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [debug, setDebug] = useState<string | null>(null)
   const router = useRouter()
   
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
+    setDebug(null)
     
     try {
+      // Log environment variables (obscured for security)
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+      setDebug(`Attempting login with Supabase URL: ${supabaseUrl.substring(0, 8)}...`)
+      
       // Create a Supabase client directly
       const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+        {
+          auth: {
+            persistSession: true, // Ensure cookies are set
+            autoRefreshToken: true,
+            detectSessionInUrl: false
+          }
+        }
       )
       
-      const { error } = await supabase.auth.signInWithPassword({
+      // Attempt login
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       })
@@ -32,11 +46,26 @@ const LoginForm = () => {
         throw error
       }
       
-      // Redirect to admin page after successful login
-      router.push('/admin')
-      router.refresh()
+      // Check if the session was created successfully
+      if (data?.session) {
+        setDebug(`Login successful! Session expires at: ${new Date(data.session.expires_at! * 1000).toLocaleString()}`)
+        
+        // Force refresh the session
+        await supabase.auth.refreshSession()
+        
+        // Wait briefly to ensure cookies are set
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
+        // Redirect to admin page after successful login
+        router.push('/admin')
+        router.refresh()
+      } else {
+        throw new Error('No session returned after login')
+      }
     } catch (err: any) {
+      console.error('Login error:', err)
       setError(err.message || 'An error occurred during login')
+      setDebug(`Error details: ${JSON.stringify(err)}`)
     } finally {
       setLoading(false)
     }
@@ -49,6 +78,15 @@ const LoginForm = () => {
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
+        </div>
+      )}
+      
+      {debug && (
+        <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4 text-sm">
+          <details>
+            <summary>Debug Info (click to expand)</summary>
+            <pre className="whitespace-pre-wrap">{debug}</pre>
+          </details>
         </div>
       )}
       
