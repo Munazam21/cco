@@ -5,6 +5,28 @@ import ProductCard from '../components/ProductCard'
 import { createServerClient } from '../lib/supabase'
 import { Product } from '../types'
 
+export const metadata = {
+  title: 'All Wall Art - Wall Art Affiliate Store',
+  description: 'Browse our complete collection of beautiful wall art pieces. Find canvas prints, posters, and wall decorations for your home or office.',
+  keywords: 'wall art, canvas prints, posters, wall decor, home decoration, amazon affiliate',
+  alternates: {
+    canonical: '/products',
+  },
+  openGraph: {
+    title: 'All Wall Art - Wall Art Affiliate Store',
+    description: 'Browse our complete collection of beautiful wall art pieces',
+    url: '/products',
+    siteName: 'Wall Art Affiliate Store',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'All Wall Art - Wall Art Affiliate Store',
+    description: 'Browse our complete collection of beautiful wall art pieces',
+  },
+}
+
 export default async function ProductsPage() {
   // Create a Supabase client for server component
   const supabase = createServerClient()

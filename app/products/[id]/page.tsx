@@ -13,6 +13,56 @@ interface ProductPageProps {
   }
 }
 
+export async function generateMetadata({ params }: ProductPageProps) {
+  const { id } = params
+  
+  // In a real app, you'd fetch this from your database
+  const mockProducts: Product[] = [
+    /* Your existing product data */
+  ]
+  
+  // Find the product with the matching ID
+  const product = mockProducts.find(p => p.id === id)
+  
+  if (!product) {
+    return {
+      title: 'Product Not Found',
+      description: 'The requested product could not be found.',
+    }
+  }
+  
+  return {
+    title: `${product.title} - Wall Art Affiliate Store`,
+    description: product.description,
+    keywords: [...product.tags, 'wall art', 'home decor', product.category].join(', '),
+    alternates: {
+      canonical: `/products/${id}`,
+    },
+    openGraph: {
+      title: product.title,
+      description: product.description,
+      url: `/products/${id}`,
+      siteName: 'Wall Art Affiliate Store',
+      images: [
+        {
+          url: product.imageUrl,
+          width: 1200,
+          height: 630,
+          alt: product.title,
+        },
+      ],
+      locale: 'en_US',
+      type: 'product',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: product.title,
+      description: product.description,
+      images: [product.imageUrl],
+    },
+  }
+}
+
 export default async function ProductPage({ params }: ProductPageProps) {
   const { id } = params
   

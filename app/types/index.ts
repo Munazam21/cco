@@ -1,8 +1,9 @@
-export type ProductSize = 'small' | 'medium' | 'large' | 'extra-large'
+// Removing ProductSize enum in favor of string for flexibility
+// export type ProductSize = 'small' | 'medium' | 'large' | 'extra-large'
 
 export interface ProductVariant {
   id: string
-  size: ProductSize
+  size: string // Changed from ProductSize to string for custom sizes
   price: number
   amazonLink: string
   dimensions: string

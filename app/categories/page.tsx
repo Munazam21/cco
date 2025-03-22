@@ -5,6 +5,28 @@ import Footer from '../components/Footer'
 import { createServerClient } from '../lib/supabase'
 import { Product } from '../types'
 
+export const metadata = {
+  title: 'Wall Art Categories - Wall Art Affiliate Store',
+  description: 'Browse our wall art collections by category. Find nature prints, abstract art, geometric designs, and more for your home or office.',
+  keywords: 'wall art categories, canvas print categories, wall decor collections, home decoration',
+  alternates: {
+    canonical: '/categories',
+  },
+  openGraph: {
+    title: 'Wall Art Categories - Wall Art Affiliate Store',
+    description: 'Browse our wall art collections by category',
+    url: '/categories',
+    siteName: 'Wall Art Affiliate Store',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Wall Art Categories - Wall Art Affiliate Store',
+    description: 'Browse our wall art collections by category',
+  },
+}
+
 export default async function CategoriesPage() {
   // Create a Supabase client for server component
   const supabase = createServerClient()

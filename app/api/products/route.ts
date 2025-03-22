@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '../../lib/supabase'
-import { Product, ProductVariant, ProductSize } from '../../types'
+import { Product, ProductVariant } from '../../types'
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,27 +36,26 @@ export async function POST(request: NextRequest) {
     //   throw new Error(`Error inserting product: ${error.message}`)
     // }
     
-    // Process variants
-    const variants: Partial<ProductVariant>[] = [
-      {
-        size: 'small' as ProductSize,
-        price: parseFloat(formData.get('variants[0].price') as string || '0'),
-        dimensions: formData.get('variants[0].dimensions') as string,
-        amazonLink: formData.get('variants[0].amazonLink') as string
-      },
-      {
-        size: 'medium' as ProductSize,
-        price: parseFloat(formData.get('variants[1].price') as string || '0'),
-        dimensions: formData.get('variants[1].dimensions') as string,
-        amazonLink: formData.get('variants[1].amazonLink') as string
-      },
-      {
-        size: 'large' as ProductSize,
-        price: parseFloat(formData.get('variants[2].price') as string || '0'),
-        dimensions: formData.get('variants[2].dimensions') as string,
-        amazonLink: formData.get('variants[2].amazonLink') as string
+    // Get the number of variants from the form data
+    const variantCount = parseInt(formData.get('variantCount') as string || '0')
+    const variants: Partial<ProductVariant>[] = []
+    
+    // Process dynamic variants
+    for (let i = 0; i < variantCount; i++) {
+      const size = formData.get(`variants[${i}].size`) as string
+      const price = parseFloat(formData.get(`variants[${i}].price`) as string || '0')
+      const dimensions = formData.get(`variants[${i}].dimensions`) as string
+      const amazonLink = formData.get(`variants[${i}].amazonLink`) as string
+      
+      if (size && price > 0 && amazonLink) {
+        variants.push({
+          size,
+          price,
+          dimensions,
+          amazonLink
+        })
       }
-    ].filter(v => v.price > 0 && v.amazonLink)
+    }
     
     // In a real app, we'd store these in Supabase as well
     // For each valid variant:
