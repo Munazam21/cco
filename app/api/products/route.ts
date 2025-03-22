@@ -13,32 +13,35 @@ export async function POST(request: NextRequest) {
     const category = formData.get('category') as string
     const imageUrl = formData.get('imageUrl') as string
     const tagsString = formData.get('tags') as string
-    const tags = tagsString.split(',').map(tag => tag.trim()).filter(Boolean)
+    const tags = tagsString ? tagsString.split(',').map(tag => tag.trim()).filter(Boolean) : []
     
     // Create product object
-    const newProduct: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'variants'> = {
+    const newProduct = {
       title,
       description,
-      imageUrl,
+      image_url: imageUrl,
       category,
       tags,
-      featured: false
+      featured: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     }
     
-    // In a real app, we'd store this in Supabase
-    // const { data: product, error } = await supabase
-    //   .from('products')
-    //   .insert(newProduct)
-    //   .select()
-    //   .single()
+    // Insert product into Supabase
+    const { data: product, error } = await supabase
+      .from('products')
+      .insert(newProduct)
+      .select()
+      .single()
     
-    // if (error) {
-    //   throw new Error(`Error inserting product: ${error.message}`)
-    // }
+    if (error) {
+      console.error('Error inserting product:', error)
+      throw new Error(`Error inserting product: ${error.message}`)
+    }
     
     // Get the number of variants from the form data
     const variantCount = parseInt(formData.get('variantCount') as string || '0')
-    const variants: Partial<ProductVariant>[] = []
+    const variantsToInsert = []
     
     // Process dynamic variants
     for (let i = 0; i < variantCount; i++) {
@@ -48,37 +51,39 @@ export async function POST(request: NextRequest) {
       const amazonLink = formData.get(`variants[${i}].amazonLink`) as string
       
       if (size && price > 0 && amazonLink) {
-        variants.push({
+        variantsToInsert.push({
+          product_id: product.id,
           size,
           price,
           dimensions,
-          amazonLink
+          amazon_link: amazonLink
         })
       }
     }
     
-    // In a real app, we'd store these in Supabase as well
-    // For each valid variant:
-    // const variantInserts = variants.map(variant => {
-    //   return supabase.from('product_variants').insert({
-    //     ...variant,
-    //     product_id: product.id
-    //   })
-    // })
-    
-    // await Promise.all(variantInserts)
+    // Insert variants into Supabase
+    if (variantsToInsert.length > 0) {
+      const { error: variantsError } = await supabase
+        .from('product_variants')
+        .insert(variantsToInsert)
+      
+      if (variantsError) {
+        console.error('Error inserting variants:', variantsError)
+        throw new Error(`Error inserting variants: ${variantsError.message}`)
+      }
+    }
     
     return NextResponse.json(
       { 
         message: 'Product added successfully',
-        product: { ...newProduct, variants }
+        product: { ...newProduct, id: product.id, variants: variantsToInsert }
       },
       { status: 201 }
     )
   } catch (error) {
     console.error('Error handling product submission:', error)
     return NextResponse.json(
-      { error: 'Failed to add product' },
+      { error: error instanceof Error ? error.message : 'Failed to add product' },
       { status: 500 }
     )
   }

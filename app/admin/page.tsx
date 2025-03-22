@@ -1,5 +1,6 @@
 import React from 'react'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import DynamicProductForm from '../components/DynamicProductForm'
@@ -30,6 +31,14 @@ export default async function AdminPage() {
           <p className="mt-4 text-center text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             Manage your wall art products and affiliate links
           </p>
+          <div className="flex justify-center mt-6 gap-4">
+            <Link href="/admin" className="px-4 py-2 bg-primary text-white rounded hover:bg-blue-600 transition-colors">
+              Add New Product
+            </Link>
+            <Link href="/admin/products" className="px-4 py-2 bg-secondary text-white rounded hover:bg-green-600 transition-colors">
+              Manage Products
+            </Link>
+          </div>
           <div className="flex justify-center mt-4">
             <SignOutButton />
           </div>
